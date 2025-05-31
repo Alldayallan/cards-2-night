@@ -5,8 +5,6 @@ import PlayerSection from './components/PlayerSection';
 import { createDeck, shuffleDeck, dealCards } from './utils/deckUtils';
 import GameOverModal from './components/GameOverModal';
 import TopicSelector from './components/TopicSelector';
-import RelationshipStatusModal from './components/RelationshipStatusModal';
-import RelationshipDurationModal from './components/RelationshipDurationModal';
 import { relationshipTopics } from './data/relationshipTopics';
 import QuestionModal from './components/QuestionModal';
 
@@ -23,18 +21,10 @@ function App() {
   const [winner, setWinner] = useState<string | null>(null);
   const [roundCount, setRoundCount] = useState(0);
   const [isDrawing, setIsDrawing] = useState(false);
-  
-  // Modal states
-  const [showRelationshipStatus, setShowRelationshipStatus] = useState(true);
-  const [showRelationshipDuration, setShowRelationshipDuration] = useState(false);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(false);
-  
-  // Selection states
-  const [relationshipStatus, setRelationshipStatus] = useState<string | null>(null);
-  const [relationshipDuration, setRelationshipDuration] = useState<string | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
+  const [showQuestion, setShowQuestion] = useState(false);
 
   useEffect(() => {
     if (gameStarted && (player1Deck.length === 0 || player2Deck.length === 0)) {
@@ -43,15 +33,7 @@ function App() {
     }
   }, [player1Deck, player2Deck, gameStarted]);
 
-  const selectRelationshipStatus = (status: string) => {
-    setRelationshipStatus(status);
-    setShowRelationshipStatus(false);
-    setShowRelationshipDuration(true);
-  };
-
-  const selectRelationshipDuration = (duration: string) => {
-    setRelationshipDuration(duration);
-    setShowRelationshipDuration(false);
+  const openTopicSelector = () => {
     setShowTopicSelector(true);
   };
 
@@ -151,25 +133,12 @@ function App() {
     setPlayer1Card(null);
     setPlayer2Card(null);
     setRoundWinner(null);
-    setRelationshipStatus(null);
-    setRelationshipDuration(null);
     setSelectedTopic(null);
-    setShowRelationshipStatus(true);
   };
 
   const closeQuestionModal = () => {
     setShowQuestion(false);
     setCurrentQuestion(null);
-  };
-
-  const restartFromGameOver = () => {
-    setGameStarted(false);
-    setGameOver(false);
-    setWinner(null);
-    setPlayer1Card(null);
-    setPlayer2Card(null);
-    setRoundWinner(null);
-    setShowRelationshipStatus(true);
   };
 
   return (
@@ -190,37 +159,15 @@ function App() {
             <p className="mb-6 text-pink-200">
               This card game helps couples reconnect and learn more about each other. Draw cards and answer relationship questions based on your chosen topic. The player with the higher card wins the round and gets to answer a question.
             </p>
-            {relationshipStatus && relationshipDuration && selectedTopic ? (
-              <div className="space-y-4">
-                <div className="bg-purple-800/50 rounded-lg p-4">
-                  <p className="text-sm text-pink-200 mb-2">Your selections:</p>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="font-semibold">Status:</span> {relationshipStatus}</p>
-                    <p><span className="font-semibold">Duration:</span> {relationshipDuration}</p>
-                    <p><span className="font-semibold">Topic:</span> {selectedTopic}</p>
-                  </div>
-                </div>
-                <div className="flex justify-center">
-                  <button
-                    onClick={startGame}
-                    className="flex items-center gap-2 bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                  >
-                    <Play className="h-5 w-5" />
-                    Start Game
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setShowRelationshipStatus(true)}
-                  className="flex items-center gap-2 bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  <Heart className="h-5 w-5" />
-                  Get Started
-                </button>
-              </div>
-            )}
+            <div className="flex justify-center">
+              <button
+                onClick={openTopicSelector}
+                className="flex items-center gap-2 bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Menu className="h-5 w-5" />
+                Choose a Topic
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center">
@@ -284,22 +231,6 @@ function App() {
         )}
       </main>
 
-      {/* Modals */}
-      {showRelationshipStatus && (
-        <RelationshipStatusModal 
-          onSelectStatus={selectRelationshipStatus} 
-          onClose={() => setShowRelationshipStatus(false)} 
-        />
-      )}
-
-      {showRelationshipDuration && relationshipStatus && (
-        <RelationshipDurationModal 
-          relationshipStatus={relationshipStatus}
-          onSelectDuration={selectRelationshipDuration} 
-          onClose={() => setShowRelationshipDuration(false)} 
-        />
-      )}
-
       {showTopicSelector && (
         <TopicSelector 
           topics={Object.keys(relationshipTopics)} 
@@ -317,7 +248,7 @@ function App() {
       )}
 
       {gameOver && (
-        <GameOverModal winner={winner} onRestart={restartFromGameOver} />
+        <GameOverModal winner={winner} onRestart={() => setShowTopicSelector(true)} />
       )}
 
       <footer className="py-4 text-center text-pink-300 text-sm">
